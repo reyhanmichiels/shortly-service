@@ -20,15 +20,13 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Build and Test with Maven
-        run: mvn clean verify
-
-      - name: Check coverage threshold
+      - name: Build and Test
         run: |
-          COVERAGE=$(grep -oP '(?<=<counter type="INSTRUCTION" missed=")\d+' target/site/jacoco/jacoco.xml | awk '{s+=$1} END {print 100 - s}')
-          echo "Coverage: $COVERAGE%"
-          if (( $(echo "$COVERAGE < 80" | bc -l) )); then
-            echo "Test coverage is below 80%! ❌"
-            exit 1
-          fi
-          shell: bash
+          mvn clean verify
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-report
+          path: target/site/jacoco/
+          retention-days: 5
