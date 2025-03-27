@@ -29,7 +29,11 @@ jobs:
             $1 ~ /com.github.reyhanmichiels.shortlyservice.business.service/ {
               instructions += $4 + $5; covered += $5
             } END {
-              printf "%.2f", (covered/instructions)*100
+              if (instructions == 0) {
+                printf "0.00"
+              } else {
+                printf "%.2f", (covered/instructions)*100
+              }
             }' target/site/jacoco/jacoco.csv)
           
           if (( $(echo "$COVERAGE < 80" | bc -l) )); then
