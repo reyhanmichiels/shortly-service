@@ -32,6 +32,7 @@ public class User {
     private String refreshToken;
 
     @Column(name = "is_active", nullable = false, columnDefinition = "BOOLEAN NOT NULL DEFAULT TRUE")
+    @Builder.Default()
     private boolean isActive = true;
 
     @CreationTimestamp
