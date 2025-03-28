@@ -1,10 +1,13 @@
 package com.github.reyhanmichiels.shortlyservice.business.service.url;
 
 import com.github.reyhanmichiels.shortlyservice.business.dto.url.CreateUrlRequest;
+import com.github.reyhanmichiels.shortlyservice.business.dto.url.UrlParam;
 import com.github.reyhanmichiels.shortlyservice.business.dto.user.UserDTO;
 import com.github.reyhanmichiels.shortlyservice.business.entity.Url;
 import com.github.reyhanmichiels.shortlyservice.business.repository.url.UrlRepository;
+import com.github.reyhanmichiels.shortlyservice.business.repository.url.UrlSpecification;
 import com.github.reyhanmichiels.shortlyservice.handler.exception.DuplicateResourceException;
+import com.github.reyhanmichiels.shortlyservice.handler.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -34,6 +37,24 @@ public class UrlServiceImpl implements UrlService {
         } catch (DataIntegrityViolationException e) {
             throw new DuplicateResourceException(e.getMessage());
         }
+    }
+
+    // TODO: handle exception if url not found and any exception
+    public String redirect(String shortUrl) {
+        return this.urlRepository.findOne(
+                        UrlSpecification.param(
+                                UrlParam.builder()
+                                        .shortUrl(shortUrl)
+                                        .isActive(true)
+                                        .build()
+                        )
+                )
+                .map(url -> url.getPassword() == null
+                        ? url.getOriginalUrl()
+                        // TODO: redirect to private url
+                        : ""
+                )
+                .orElseThrow(() -> new ResourceNotFoundException("URL not found"));
     }
 
 }

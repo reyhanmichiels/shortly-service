@@ -7,14 +7,15 @@ import com.github.reyhanmichiels.shortlyservice.business.service.url.UrlService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
 
 @RestController
 @RequiredArgsConstructor
@@ -39,6 +40,16 @@ public class UrlController {
                                 "Url created successfully"
                         )
                 );
+    }
+
+    @GetMapping(path = "{shortUrl}")
+    public void redirect(
+            @PathVariable String shortUrl,
+            HttpServletResponse response
+    ) throws IOException {
+        response.sendRedirect(
+                this.urlService.redirect(shortUrl)
+        );
     }
 
 }

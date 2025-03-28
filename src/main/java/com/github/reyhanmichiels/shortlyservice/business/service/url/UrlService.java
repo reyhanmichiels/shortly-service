@@ -7,4 +7,6 @@ public interface UrlService {
 
     void create(UserDTO authUser, CreateUrlRequest param);
 
+    String redirect(String shortUrl);
+
 }
