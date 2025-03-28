@@ -6,6 +6,7 @@ import com.github.reyhanmichiels.shortlyservice.infrastructure.security.filter.E
 import com.github.reyhanmichiels.shortlyservice.infrastructure.security.filter.JWTFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -39,6 +40,10 @@ public class SecurityConfig {
                                 "/api/v1/auth/login",
                                 "/api/v1/auth/register",
                                 "/api/v1/auth/refresh-token"
+                        ).permitAll()
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

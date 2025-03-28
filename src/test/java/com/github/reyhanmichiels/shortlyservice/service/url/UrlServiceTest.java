@@ -6,19 +6,23 @@ import com.github.reyhanmichiels.shortlyservice.business.entity.Url;
 import com.github.reyhanmichiels.shortlyservice.business.repository.url.UrlRepository;
 import com.github.reyhanmichiels.shortlyservice.business.service.url.UrlServiceImpl;
 import com.github.reyhanmichiels.shortlyservice.handler.exception.DuplicateResourceException;
+import com.github.reyhanmichiels.shortlyservice.handler.exception.ResourceNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class UrlServiceImplTest {
+class UrlServiceTest {
 
     @Mock
     private UrlRepository urlRepository;
@@ -86,5 +90,45 @@ class UrlServiceImplTest {
 
         doThrow(DataIntegrityViolationException.class).when(urlRepository).save(url);
         assertThrows(DuplicateResourceException.class, () -> urlService.create(authUser, param));
+    }
+
+    @Test
+    void redirect_WhenUrlExistsAndNoPassword_ShouldReturnOriginalUrl() {
+        String shortUrl = "shortUrl";
+        Url url = Url.builder()
+                .shortUrl(shortUrl)
+                .originalUrl("originalUrl")
+                .isActive(true)
+                .build();
+
+        when(urlRepository.findOne(any(Specification.class))).thenReturn(Optional.of(url));
+
+        String result = urlService.redirect(shortUrl);
+        assertEquals("originalUrl", result);
+    }
+
+    @Test
+    void redirect_WhenUrlExistsAndHasPassword_ShouldReturnAuthUrl() {
+        String shortUrl = "shortUrl";
+        Url url = Url.builder()
+                .shortUrl(shortUrl)
+                .originalUrl("originalUrl")
+                .password("password")
+                .isActive(true)
+                .build();
+
+        when(urlRepository.findOne(any(Specification.class))).thenReturn(Optional.of(url));
+
+        String result = urlService.redirect(shortUrl);
+        assertEquals("", result);
+    }
+
+    @Test
+    void redirect_WhenUrlNotFound_ShouldThrowResourceNotFoundException() {
+        String shortUrl = "shortUrl";
+
+        when(urlRepository.findOne(any(Specification.class))).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> urlService.redirect(shortUrl));
     }
 }
