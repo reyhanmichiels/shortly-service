@@ -2,6 +2,7 @@ package com.github.reyhanmichiels.shortlyservice.handler.controller;
 
 import com.github.reyhanmichiels.shortlyservice.business.dto.http.HttpResponse;
 import com.github.reyhanmichiels.shortlyservice.business.dto.url.CreateUrlRequest;
+import com.github.reyhanmichiels.shortlyservice.business.dto.url.RedirectPrivateUrlRequest;
 import com.github.reyhanmichiels.shortlyservice.business.dto.user.UserDTO;
 import com.github.reyhanmichiels.shortlyservice.business.service.url.UrlService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -42,13 +43,28 @@ public class UrlController {
                 );
     }
 
-    @GetMapping(path = "{shortUrl}")
+    @GetMapping(path = "/r/{shortUrl}")
     public void redirect(
             @PathVariable String shortUrl,
             HttpServletResponse response
     ) throws IOException {
         response.sendRedirect(
                 this.urlService.getRedirectUrl(shortUrl)
+        );
+    }
+
+    @PostMapping(path = "/r/{shortUrl}")
+    public void redirectPrivate(
+            @PathVariable String shortUrl,
+            @RequestParam String password,
+            HttpServletResponse response
+    ) throws IOException {
+        response.sendRedirect(
+                this.urlService.getRedirectPrivateUrl(RedirectPrivateUrlRequest.builder()
+                        .shortUrl(shortUrl)
+                        .password(password)
+                        .build()
+                )
         );
     }
 

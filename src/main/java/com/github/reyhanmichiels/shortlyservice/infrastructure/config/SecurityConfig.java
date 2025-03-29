@@ -42,8 +42,7 @@ public class SecurityConfig {
                                 "/api/v1/auth/refresh-token"
                         ).permitAll()
                         .requestMatchers(
-                                HttpMethod.GET,
-                                "/**"
+                                "/r/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

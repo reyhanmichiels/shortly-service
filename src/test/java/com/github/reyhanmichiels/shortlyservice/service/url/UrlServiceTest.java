@@ -1,6 +1,7 @@
 package com.github.reyhanmichiels.shortlyservice.service.url;
 
 import com.github.reyhanmichiels.shortlyservice.business.dto.url.CreateUrlRequest;
+import com.github.reyhanmichiels.shortlyservice.business.dto.url.RedirectPrivateUrlRequest;
 import com.github.reyhanmichiels.shortlyservice.business.dto.user.UserDTO;
 import com.github.reyhanmichiels.shortlyservice.business.entity.Url;
 import com.github.reyhanmichiels.shortlyservice.business.repository.url.UrlRepository;
@@ -120,7 +121,7 @@ class UrlServiceTest {
         when(urlRepository.findOne(any(Specification.class))).thenReturn(Optional.of(url));
 
         String result = urlService.getRedirectUrl(shortUrl);
-        assertEquals("", result);
+        assertEquals("/r/shortUrl/input-password", result);
     }
 
     @Test
@@ -130,5 +131,61 @@ class UrlServiceTest {
         when(urlRepository.findOne(any(Specification.class))).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> urlService.getRedirectUrl(shortUrl));
+    }
+
+    @Test
+    void getRedirectPrivateUrl_WhenUrlExistsAndPasswordMatches_ShouldReturnOriginalUrl() {
+        String shortUrl = "shortUrl";
+        String password = "password";
+        RedirectPrivateUrlRequest param = RedirectPrivateUrlRequest.builder()
+                .shortUrl(shortUrl)
+                .password(password)
+                .build();
+        Url url = Url.builder()
+                .shortUrl(shortUrl)
+                .originalUrl("originalUrl")
+                .password("encodedPassword")
+                .isActive(true)
+                .build();
+
+        when(urlRepository.findOne(any(Specification.class))).thenReturn(Optional.of(url));
+        when(passwordEncoder.matches(password, url.getPassword())).thenReturn(true);
+
+        String result = urlService.getRedirectPrivateUrl(param);
+        assertEquals("originalUrl", result);
+    }
+
+    @Test
+    void getRedirectPrivateUrl_WhenUrlExistsAndPasswordDoesNotMatch_ShouldReturnErrorUrl() {
+        String shortUrl = "shortUrl";
+        String password = "wrongPassword";
+        RedirectPrivateUrlRequest param = RedirectPrivateUrlRequest.builder()
+                .shortUrl(shortUrl)
+                .password(password)
+                .build();
+        Url url = Url.builder()
+                .shortUrl(shortUrl)
+                .originalUrl("originalUrl")
+                .password("encodedPassword")
+                .isActive(true)
+                .build();
+
+        when(urlRepository.findOne(any(Specification.class))).thenReturn(Optional.of(url));
+        when(passwordEncoder.matches(password, url.getPassword())).thenReturn(false);
+
+        String result = urlService.getRedirectPrivateUrl(param);
+        assertEquals("/r/shortUrl/input-password?error=Invalid password", result);
+    }
+
+    @Test
+    void getRedirectPrivateUrl_WhenUrlNotFound_ShouldThrowResourceNotFoundException() {
+        RedirectPrivateUrlRequest param = RedirectPrivateUrlRequest.builder()
+                .shortUrl("nonExistentUrl")
+                .password("password")
+                .build();
+
+        when(urlRepository.findOne(any(Specification.class))).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> urlService.getRedirectPrivateUrl(param));
     }
 }
