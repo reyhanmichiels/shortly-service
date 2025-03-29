@@ -1,6 +1,7 @@
 package com.github.reyhanmichiels.shortlyservice.business.service.url;
 
 import com.github.reyhanmichiels.shortlyservice.business.dto.url.CreateUrlRequest;
+import com.github.reyhanmichiels.shortlyservice.business.dto.url.RedirectPrivateUrlRequest;
 import com.github.reyhanmichiels.shortlyservice.business.dto.url.UrlParam;
 import com.github.reyhanmichiels.shortlyservice.business.dto.user.UserDTO;
 import com.github.reyhanmichiels.shortlyservice.business.entity.Url;
@@ -40,7 +41,7 @@ public class UrlServiceImpl implements UrlService {
     }
 
     // TODO: handle exception if url not found and any exception
-    public String redirect(String shortUrl) {
+    public String getRedirectUrl(String shortUrl) {
         return this.urlRepository.findOne(
                         UrlSpecification.param(
                                 UrlParam.builder()
@@ -51,9 +52,27 @@ public class UrlServiceImpl implements UrlService {
                 )
                 .map(url -> url.getPassword() == null
                         ? url.getOriginalUrl()
-                        // TODO: redirect to private url
-                        : ""
+                        : String.format("/r/%s/input-password", url.getShortUrl())
                 )
+                .orElseThrow(() -> new ResourceNotFoundException("URL not found"));
+    }
+
+    public String getRedirectPrivateUrl(RedirectPrivateUrlRequest param) {
+        return this.urlRepository.findOne(
+                        UrlSpecification.param(
+                                UrlParam.builder()
+                                        .shortUrl(param.getShortUrl())
+                                        .isActive(true)
+                                        .build()
+                        )
+                )
+                .map(url -> {
+                    if (this.passwordEncoder.matches(param.getPassword(), url.getPassword())) {
+                        return url.getOriginalUrl();
+                    }
+
+                    return String.format("/r/%s/input-password?error=%s", url.getShortUrl(), "Invalid password");
+                })
                 .orElseThrow(() -> new ResourceNotFoundException("URL not found"));
     }
 
