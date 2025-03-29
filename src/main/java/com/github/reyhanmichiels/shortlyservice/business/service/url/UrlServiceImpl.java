@@ -40,7 +40,7 @@ public class UrlServiceImpl implements UrlService {
     }
 
     // TODO: handle exception if url not found and any exception
-    public String redirect(String shortUrl) {
+    public String getRedirectUrl(String shortUrl) {
         return this.urlRepository.findOne(
                         UrlSpecification.param(
                                 UrlParam.builder()
@@ -51,10 +51,11 @@ public class UrlServiceImpl implements UrlService {
                 )
                 .map(url -> url.getPassword() == null
                         ? url.getOriginalUrl()
-                        // TODO: redirect to private url
-                        : ""
+                        : String.format("/private/%s", url.getShortUrl())
                 )
                 .orElseThrow(() -> new ResourceNotFoundException("URL not found"));
     }
+
+    public String redirectPrivate()
 
 }

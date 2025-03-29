@@ -48,7 +48,7 @@ public class UrlController {
             HttpServletResponse response
     ) throws IOException {
         response.sendRedirect(
-                this.urlService.redirect(shortUrl)
+                this.urlService.getRedirectUrl(shortUrl)
         );
     }
 

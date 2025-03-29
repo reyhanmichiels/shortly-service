@@ -93,7 +93,7 @@ class UrlServiceTest {
     }
 
     @Test
-    void redirect_WhenUrlExistsAndNoPassword_ShouldReturnOriginalUrl() {
+    void getRedirectUrl_WhenUrlExistsAndNoPassword_ShouldReturnOriginalUrl() {
         String shortUrl = "shortUrl";
         Url url = Url.builder()
                 .shortUrl(shortUrl)
@@ -103,12 +103,12 @@ class UrlServiceTest {
 
         when(urlRepository.findOne(any(Specification.class))).thenReturn(Optional.of(url));
 
-        String result = urlService.redirect(shortUrl);
+        String result = urlService.getRedirectUrl(shortUrl);
         assertEquals("originalUrl", result);
     }
 
     @Test
-    void redirect_WhenUrlExistsAndHasPassword_ShouldReturnAuthUrl() {
+    void getRedirectUrl_WhenUrlExistsAndHasPassword_ShouldReturnAuthUrl() {
         String shortUrl = "shortUrl";
         Url url = Url.builder()
                 .shortUrl(shortUrl)
@@ -119,16 +119,16 @@ class UrlServiceTest {
 
         when(urlRepository.findOne(any(Specification.class))).thenReturn(Optional.of(url));
 
-        String result = urlService.redirect(shortUrl);
+        String result = urlService.getRedirectUrl(shortUrl);
         assertEquals("", result);
     }
 
     @Test
-    void redirect_WhenUrlNotFound_ShouldThrowResourceNotFoundException() {
+    void getRedirectUrl_WhenUrlNotFound_ShouldThrowResourceNotFoundException() {
         String shortUrl = "shortUrl";
 
         when(urlRepository.findOne(any(Specification.class))).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> urlService.redirect(shortUrl));
+        assertThrows(ResourceNotFoundException.class, () -> urlService.getRedirectUrl(shortUrl));
     }
 }
